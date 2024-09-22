@@ -157,6 +157,8 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
+vim.opt.expandtab = true
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -681,6 +683,7 @@ require('lazy').setup({
     },
     opts = {
       notify_on_error = false,
+      notify_no_formatters = true,
       format_on_save = function(bufnr)
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
@@ -699,6 +702,24 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        cpp = {
+          command = 'clang-format',
+          args = { '-style=Microsoft', '-assume-filename', '$FILENAME' },
+          range_args = function(self, ctx)
+            local util = require 'conform.util'
+            local start_offset, end_offset = util.get_offsets_from_range(ctx.buf, ctx.range)
+            local length = end_offset - start_offset
+            return {
+              '--style=Microsoft',
+              '--assume-filename',
+              '$FILENAME',
+              '--offset',
+              tostring(start_offset),
+              '--length',
+              tostring(length),
+            }
+          end,
+        },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
@@ -917,11 +938,11 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.debug',
   require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
